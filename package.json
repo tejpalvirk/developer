@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tejpalvirk/contextmanager/developer.git"
+    "url": "git+https://github.com/tejpalvirk/developer.git"
   },
   "keywords": [
     "mcp",
@@ -28,9 +28,9 @@
   "author": "tejpalvirk",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tejpalvirk/contextmanager/issues"
+    "url": "https://github.com/tejpalvirk/developer/issues"
   },
-  "homepage": "https://github.com/tejpalvirk/contextmanager#readme",
+  "homepage": "https://github.com/tejpalvirk/developer#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
     "zod": "^3.22.4",
