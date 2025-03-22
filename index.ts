@@ -2,10 +2,6 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,18 +9,23 @@ import { z } from "zod";
 import { readFileSync, existsSync } from "fs";
 
 // Define memory file path using environment variable with fallback
-const defaultMemoryPath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'memory.json');
+const parentPath = path.dirname(fileURLToPath(import.meta.url));
+const defaultMemoryPath = path.join(parentPath, 'memory.json');
+const defaultSessionsPath = path.join(parentPath, 'sessions.json');
 
-// If MEMORY_FILE_PATH is just a filename, put it in the same directory as the script
+// Properly handle absolute and relative paths for MEMORY_FILE_PATH
 const MEMORY_FILE_PATH = process.env.MEMORY_FILE_PATH
   ? path.isAbsolute(process.env.MEMORY_FILE_PATH)
-    ? process.env.MEMORY_FILE_PATH
-    : path.join(path.dirname(fileURLToPath(import.meta.url)), process.env.MEMORY_FILE_PATH)
-  : defaultMemoryPath;
+    ? process.env.MEMORY_FILE_PATH  // Use absolute path as is
+    : path.join(process.cwd(), process.env.MEMORY_FILE_PATH)  // Relative to current working directory
+  : defaultMemoryPath;  // Default fallback
 
-// Define sessions file path in the same directory as memory file
-const SESSIONS_FILE_PATH = process.env.SESSIONS_FILE_PATH || 
-  path.join(path.dirname(MEMORY_FILE_PATH), 'developer_sessions.json');
+// Properly handle absolute and relative paths for SESSIONS_FILE_PATH
+const SESSIONS_FILE_PATH = process.env.SESSIONS_FILE_PATH
+  ? path.isAbsolute(process.env.SESSIONS_FILE_PATH)
+    ? process.env.SESSIONS_FILE_PATH  // Use absolute path as is
+    : path.join(process.cwd(), process.env.SESSIONS_FILE_PATH)  // Relative to current working directory
+  : defaultSessionsPath;  // Default fallback
 
 // Software Development specific entity types
 const VALID_ENTITY_TYPES = [
@@ -1053,6 +1054,10 @@ async function main() {
           
           // Get recent sessions from persistent storage
           const sessionStates = await loadSessionStates();
+
+          // Initialize the session state
+          sessionStates.set(sessionId, []);
+          await saveSessionStates(sessionStates);
           
           // Convert sessions map to array, sort by date, and take most recent ones
           const recentSessions = Array.from(sessionStates.entries())
