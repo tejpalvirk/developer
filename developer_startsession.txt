@@ -1,5 +1,3 @@
-Start Session Tool for Developer
-
 A powerful session initialization tool for software development contextual work.
 This tool starts a new development session and provides a comprehensive overview of the current development landscape.
 It retrieves recent sessions, active projects, high-priority tasks, and upcoming milestones to help focus the work effectively.

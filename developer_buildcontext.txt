@@ -1,5 +1,3 @@
-Build Context Tool for Developer
-
 A powerful tool for building and enriching the software development knowledge graph through creation operations.
 This tool allows developers to add new entities, create relationships between entities, or add observations to existing entities.
 Each operation type serves a specific purpose in constructing a comprehensive development context model.

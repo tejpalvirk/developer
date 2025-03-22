@@ -1,5 +1,3 @@
-Delete Context Tool for Developer
-
 A versatile tool for removing elements from the software development knowledge graph.
 This tool allows precise deletion of entities, relationships between entities, or specific observations from existing entities.
 It helps maintain an accurate and current representation of the development context as projects evolve.
