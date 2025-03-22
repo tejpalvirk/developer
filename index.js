@@ -794,7 +794,7 @@ async function main() {
          */
         server.tool("advancedcontext", toolDescriptions["advancedcontext"], {
             type: z.enum(["graph", "search", "nodes", "related", "decisions", "milestone"]).describe("Type of get operation: 'graph', 'search', 'nodes', 'related', 'decisions', or 'milestone'"),
-            params: z.any().describe("Parameters for the operation, structure varies by type")
+            params: z.record(z.string(), z.any()).describe("Parameters for the operation, structure varies by type")
         }, async ({ type, params }) => {
             try {
                 let result;
@@ -1464,7 +1464,7 @@ ${outgoingText}`;
             stageNumber: z.number().int().positive().describe("The sequence number of the current stage (starts at 1)"),
             totalStages: z.number().int().positive().describe("Total number of stages in the workflow (typically 6 for standard workflow)"),
             analysis: z.string().optional().describe("Text analysis or observations for the current stage"),
-            stageData: z.any().optional().describe(`Stage-specific data structure - format depends on the stage type:
+            stageData: z.record(z.string(), z.any()).optional().describe(`Stage-specific data structure - format depends on the stage type:
         - For 'summary' stage: { summary: "Session summary text", duration: "2 hours", focus: "ProjectName" }
         - For 'achievements' stage: { achievements: ["Implemented feature X", "Fixed bug Y", "Refactored component Z"] }
         - For 'taskUpdates' stage: { taskUpdates: [{ name: "Task1", status: "completed" }, { name: "Task2", status: "in_progress" }] }
