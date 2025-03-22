@@ -1,0 +1,67 @@
+Advanced Context Tool for Developer
+
+A sophisticated tool for advanced querying and analysis of the software development knowledge graph.
+This tool provides specialized operations to extract meaningful insights and contextual information from the graph structure.
+It enables deep exploration of projects, components, relationships, decisions, and progress tracking.
+
+When to use this tool:
+- Retrieving the complete development knowledge graph
+- Searching for specific entities using keyword or partial matching
+- Fetching details on a precise set of development entities
+- Exploring all relationships for a specific entity
+- Examining the decision history for a software project
+- Tracking progress toward project milestones
+- Investigating dependencies between components
+- Analyzing the evolution of a software project
+- Understanding the context surrounding development entities
+
+Key features:
+- Six specialized query operation types
+- Full graph retrieval with entities and relations
+- Keyword-based search across entities and their properties
+- Direct entity lookup by exact name
+- Relationship exploration with filtering options
+- Project decision history with chronological ordering
+- Milestone progress tracking with task status breakdown
+- JSON-formatted response with query results
+- Detailed error reporting when operations fail
+
+Parameters explained:
+- type: The query operation type to perform, which must be one of:
+  * "graph" - Retrieve the entire knowledge graph (all entities and relations)
+  * "search" - Find entities by keyword/partial match in name, type, or observations
+  * "nodes" - Get specific entities by exact name
+  * "related" - Get all entities related to a specific entity
+  * "decisions" - Get the decision history for a project
+  * "milestone" - Get progress tracking for a specific milestone
+- params: Operation-specific parameters structure:
+  * For "graph": No parameters needed
+  * For "search": { query: "search text" }
+  * For "nodes": { names: ["EntityName1", "EntityName2", ...] }
+  * For "related": { entityName: "EntityName", relationTypes: ["type1", "type2", ...] }
+  * For "decisions": { projectName: "ProjectName" }
+  * For "milestone": { milestoneName: "MilestoneName" }
+
+Operation details:
+- "graph" returns the complete knowledge graph structure
+- "search" performs partial matching on entity names, types, and observations
+- "nodes" retrieves specific entities by exact name matching
+- "related" finds all incoming and outgoing relationships for an entity
+- "decisions" retrieves and chronologically sorts project decisions
+- "milestone" calculates progress percentage and task breakdowns
+
+Return structures:
+- All operations return { success: true/false, ... } with operation-specific data
+- Error responses include detailed error messages
+- "related" returns both incoming and outgoing relationships
+- "milestone" includes progress percentage and task categorization
+
+You should:
+1. Select the most appropriate query type for your information need
+2. Provide the required parameters for your chosen operation type
+3. Start with broader queries and refine to more specific ones
+4. Use "search" for exploratory investigation when entity names are unknown
+5. Use "related" to explore the neighborhood of a known entity
+6. Use "decisions" to understand the rationale behind project changes
+7. Use "milestone" to evaluate project progress and identify blockers
+8. Combine query results to build comprehensive understanding 

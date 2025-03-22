@@ -1,0 +1,67 @@
+Build Context Tool for Developer
+
+A powerful tool for building and enriching the software development knowledge graph through creation operations.
+This tool allows developers to add new entities, create relationships between entities, or add observations to existing entities.
+Each operation type serves a specific purpose in constructing a comprehensive development context model.
+
+When to use this tool:
+- Creating new project components like features, tasks, and milestones
+- Establishing relationships between development entities (e.g., component implements feature)
+- Documenting observations about existing entities (statuses, descriptions, etc.)
+- Building a graph of connected software development artifacts
+- Recording new information discovered during development
+- Tracking project structure, dependencies, and status
+- Documenting developer roles and assignments
+
+Key features:
+- Three distinct operation types (entities, relations, observations)
+- Type validation against software development domain standards
+- Automatic rejection of invalid entity or relation types
+- Safe addition of new observations to existing entities
+- JSON-formatted response with operation results
+- Clear error messages when operations fail
+- Handles both single and batch operations
+
+Parameters explained:
+- type: The operation type to perform, which must be one of:
+  * "entities" - Create new software development entities
+  * "relations" - Create relationships between existing entities
+  * "observations" - Add observations to existing entities
+- data: Operation-specific data structure:
+  * For "entities": Array of objects with { name, entityType, observations[] }
+  * For "relations": Array of objects with { from, to, relationType }
+  * For "observations": Array of objects with { entityName, contents[] }
+
+Entity Types:
+- project - Overall software project
+- component - Module, service, or package within a project
+- feature - Specific functionality being developed
+- issue - Bug or problem to be fixed
+- task - Work item or activity needed for development
+- developer - Team member working on the project
+- technology - Language, framework, or tool used
+- decision - Important technical or architectural decision
+- milestone - Key project deadline or phase
+- environment - Development, staging, production environments
+- documentation - Project documentation
+- requirement - Project requirement or specification
+
+Relation Types include:
+- depends_on - Dependency relationship
+- implements - Component implements a feature
+- assigned_to - Task is assigned to a developer
+- blocked_by - Task is blocked by an issue
+- uses - Component uses a technology
+- part_of - Component is part of a project
+- contains - Project contains a component
+- works_on - Developer works on a project/component
+
+You should:
+1. Specify the operation type based on what you need to create (entities, relations, or observations)
+2. Structure your data according to the operation type's requirements
+3. Use valid entity types and relation types from the software development domain
+4. Ensure entities exist before creating relations between them
+5. Provide meaningful names and descriptions for new entities
+6. Use observations to add metadata like status, priority, or deadlines
+7. Create complete structures rather than adding entities/relations piecemeal
+8. Check the operation result to confirm successful creation 

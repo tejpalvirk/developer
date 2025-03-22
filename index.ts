@@ -74,32 +74,31 @@ const STATUS_VALUES = {
   milestone: ['planned', 'in_progress', 'reached', 'delayed']
 };
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// // Collect tool descriptions from text files
-// const toolDescriptions: Record<string, string> = {
-//   'startsession': '',
-//   'loadcontext': '',
-//   'deletecontext': '',
-//   'buildcontext': '',
-//   'advancedcontext': '',
-//   'endsession': '',
-// };
-// for (const tool of Object.keys(toolDescriptions)) {
-//   try {
-//     const descriptionFilePath = path.resolve(
-//       __dirname,
-//       "descriptions",
-//       `developer_${tool}.txt`
-//     );
-//     if (existsSync(descriptionFilePath)) {
-//         toolDescriptions[tool] = readFileSync(descriptionFilePath, 'utf-8');
-//       }
-//   } catch (error) {
-//     console.error(`Error reading description file for tool '${tool}': ${error}`);
-//   }
-// }
+// Collect tool descriptions from text files
+const toolDescriptions: Record<string, string> = {
+  'startsession': '',
+  'loadcontext': '',
+  'deletecontext': '',
+  'buildcontext': '',
+  'advancedcontext': '',
+  'endsession': '',
+};
+for (const tool of Object.keys(toolDescriptions)) {
+  try {
+    const descriptionFilePath = path.resolve(
+      __dirname,
+      `developer_${tool}.txt`
+    );
+    if (existsSync(descriptionFilePath)) {
+        toolDescriptions[tool] = readFileSync(descriptionFilePath, 'utf-8');
+      }
+  } catch (error) {
+    console.error(`Error reading description file for tool '${tool}': ${error}`);
+  }
+}
 
 // Session management functions
 async function loadSessionStates(): Promise<Map<string, any[]>> {
@@ -814,7 +813,7 @@ async function main() {
      */
     server.tool(
       "buildcontext",
-      // toolDescriptions["buildcontext"],
+      toolDescriptions["buildcontext"],
       {
         type: z.enum(["entities", "relations", "observations"]).describe("Type of creation operation: 'entities', 'relations', or 'observations'"),
         data: z.any().describe("Data for the creation operation, structure varies by type")
@@ -890,7 +889,7 @@ async function main() {
      */
     server.tool(
       "deletecontext",
-      // toolDescriptions["deletecontext"],
+      toolDescriptions["deletecontext"],
       {
         type: z.enum(["entities", "relations", "observations"]).describe("Type of deletion operation: 'entities', 'relations', or 'observations'"),
         data: z.any().describe("Data for the deletion operation, structure varies by type")
@@ -958,7 +957,7 @@ async function main() {
      */
     server.tool(
       "advancedcontext",
-      // toolDescriptions["advancedcontext"],
+      toolDescriptions["advancedcontext"],
       {
         type: z.enum(["graph", "search", "nodes", "related", "decisions", "milestone"]).describe("Type of get operation: 'graph', 'search', 'nodes', 'related', 'decisions', or 'milestone'"),
         params: z.any().describe("Parameters for the operation, structure varies by type")
@@ -1045,7 +1044,7 @@ async function main() {
      */
     server.tool(
       "startsession",
-      // toolDescriptions["startsession"],
+      toolDescriptions["startsession"],
       {},
       async () => {
         try {
@@ -1157,7 +1156,7 @@ To load specific context based on the user's choice, use the \`loadcontext\` too
      */
     server.tool(
       "loadcontext",
-      // toolDescriptions["loadcontext"],
+      toolDescriptions["loadcontext"],
       {
         entityName: z.string(),
         entityType: z.string().optional(),
@@ -1731,7 +1730,7 @@ ${outgoingText}`;
      */
     server.tool(
       "endsession",
-      // toolDescriptions["endsession"],
+      toolDescriptions["endsession"],
       {
         sessionId: z.string().describe("The unique session identifier obtained from startsession"),
         stage: z.string().describe("Current stage of analysis: 'summary', 'achievements', 'taskUpdates', 'newTasks', 'projectStatus', or 'assembly'"),

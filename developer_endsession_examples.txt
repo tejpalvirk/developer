@@ -1,0 +1,51 @@
+## Usage examples
+
+### Stage 1: Summary Stage
+```json
+{
+  "sessionId": "dev_1234567890_abc123",
+  "stage": "summary",
+  "stageNumber": 1,
+  "totalStages": 6,
+  "analysis": "Analyzed progress on the authentication system",
+  "stageData": {
+    "summary": "Completed the login functionality and fixed related bugs",
+    "duration": "3 hours",
+    "focus": "AuthSystem"
+  },
+  "nextStageNeeded": true,
+  "isRevision": false
+}
+```
+
+### Stage 2: Achievements Stage
+```json
+{
+  "sessionId": "dev_1234567890_abc123",
+  "stage": "achievements",
+  "stageNumber": 2,
+  "totalStages": 6,
+  "analysis": "Listed key accomplishments",
+  "stageData": {
+    "achievements": [
+      "Implemented password reset functionality",
+      "Fixed login redirect bug",
+      "Added error handling for authentication failures"
+    ]
+  },
+  "nextStageNeeded": true,
+  "isRevision": false
+}
+```
+
+### Final Stage: Assembly
+```json
+{
+  "sessionId": "dev_1234567890_abc123",
+  "stage": "assembly",
+  "stageNumber": 6,
+  "totalStages": 6,
+  "nextStageNeeded": false,
+  "isRevision": false
+}
+```

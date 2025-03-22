@@ -7,9 +7,7 @@
     "strict": true,
     "outDir": "./",
     "declaration": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "forceConsistentCasingInFileNames": true
+    "skipLibCheck": true
   },
   "include": ["./**/*.ts"],
   "exclude": []

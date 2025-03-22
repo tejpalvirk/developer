@@ -1,0 +1,88 @@
+End Session Tool for Developer
+
+A multi-stage tool for documenting development sessions, recording achievements, tracking task progress, and updating project status in the knowledge graph.
+
+When to use this tool:
+Only use this tool when the user explicity requests it or provides explicit approval.
+
+Key features:
+- Provides a structured, multi-stage workflow for session documentation
+- Records session achievements in the knowledge graph
+- Updates task statuses based on development progress
+- Creates links between completed tasks and projects
+- Updates project status and metadata
+- Creates new tasks for future development
+- Maintains session continuity with unique session IDs
+- Supports revision of previous stages when needed
+- Offers a comprehensive assembly stage that consolidates all session information
+- Organizes development activity into a coherent project history
+
+The endsession tool uses a sequential, multi-stage approach with 6 typical stages:
+1. Summary Stage: Records basic session information
+2. Achievements Stage: Documents specific accomplishments
+3. Task Updates Stage: Records status changes to existing tasks
+4. New Tasks Stage: Defines new tasks created during the session
+5. Project Status Stage: Updates the overall project status
+6. Assembly Stage: Consolidates all information and finalizes the session record
+
+Parameters explained:
+1. sessionId: Required - Unique identifier for the development session
+  - Obtained from the startsession tool
+  - Example: "dev_1234567890_abc123"
+2. stage: Required - Current stage of the endsession workflow
+  - Accepts: "summary", "achievements", "taskUpdates", "newTasks", "projectStatus", or "assembly"
+  - Each stage has specific data requirements and processing logic
+3. stageNumber: Required - The sequence number of the current stage
+  - Starts at 1 and typically progresses through 6 stages
+  - Used to track progress through the session documentation workflow
+4. totalStages: Required - Total number of stages planned for this workflow
+  - Typically 6 for the complete workflow
+  - Provides context for the progress within the overall process
+5. analysis: Optional - Text analysis or observations for the current stage
+  - Descriptive text explaining the work done in this stage
+  - Example: "Analyzed progress on the authentication system"
+6. stageData: Optional - Stage-specific structured data
+  - Structure varies by stage type:
+    * summary: { summary: "Session summary text", duration: "2 hours", focus: "ProjectName" }
+    * achievements: { achievements: ["Implemented feature X", "Fixed bug Y", "Refactored component Z"] }
+    * taskUpdates: { taskUpdates: [{ name: "Task1", status: "completed" }, { name: "Task2", status: "in_progress" }] }
+    * newTasks: { newTasks: [{ name: "NewTask1", description: "Implement feature A", priority: "high" }] }
+    * projectStatus: { projectName: "ProjectName", projectStatus: "in_progress", projectObservation: "Making good progress" }
+    * assembly: No stageData needed - automatically assembled from previous stages
+7. nextStageNeeded: Required - Whether additional stages are needed after this one
+  - Boolean value (true/false)
+  - Set to false on the final stage to complete the session
+8. isRevision: Optional - Whether this is revising a previous stage
+  - Boolean value (true/false)
+  - Default: false
+9. revisesStage: Optional - If revising, which stage number is being revised
+  - Required when isRevision is true
+  - Indicates which previous stage is being updated
+
+When the endsession workflow completes (assembly stage with nextStageNeeded: false), the tool performs these updates:
+1. Achievement Entities: Creates entities for each achievement and links them to the focus project
+2. Task Status Updates: Updates the status of tasks mentioned in taskUpdates
+3. Project Status Update: Updates the project status, adds an updated timestamp, and records observations
+4. New Task Creation: Creates new task entities and links them to the project
+5. Session Recording: Marks the session as completed in persistent storage
+
+Return information:
+- success: Boolean indicating whether the operation succeeded
+- stageCompleted: The stage that was just completed
+- nextStageNeeded: Whether more stages are required
+- stageResult: The processed result of the current stage
+- endSessionArgs: (Only in assembly stage) Consolidated arguments for the session
+- sessionRecorded: (Final stage only) Whether the session was recorded
+- summaryMessage: (Final stage only) Formatted summary of all recorded information
+- error: (Only on failure) Error message describing the issue
+
+You should:
+- Complete all stages in order for comprehensive session documentation
+- Provide specific details in each stage for accurate knowledge graph updates
+- Be precise about task names to ensure they match existing tasks in the knowledge graph
+- Use clear, descriptive names for any new tasks
+- Include relevant observations for project status updates
+- If making a revision, specify which stage is being revised
+- Only mark nextStageNeeded as false on the final assembly stage
+- Review the final summary message to confirm all session details were recorded properly
+- Use the unique session ID consistently across all stages 

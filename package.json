@@ -1,7 +1,7 @@
 {
   "name": "contextmanager-developer",
   "version": "1.0.0",
-  "description": "MCP Server implementations for various domains",
+  "description": "MCP Server implementations for managing context of software development projects",
   "type": "module",
   "main": "./index.js",
   "bin": {
@@ -9,7 +9,8 @@
   },
   "files": [
     "index.js",
-    "README.md"
+    "README.md",
+    "*.txt"
   ],
   "scripts": {
     "build": "tsc && shx chmod +x index.js",
@@ -18,19 +19,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tejpalvirk/developer.git"
+    "url": "git+https://github.com/tejpalvirk/contextmanager.git"
   },
   "keywords": [
     "mcp",
     "claude",
     "context"
   ],
-  "author": "tejpalvirk",
+  "author": "Tejpal Virk",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tejpalvirk/developer/issues"
+    "url": "https://github.com/tejpalvirk/contextmanager/issues"
   },
-  "homepage": "https://github.com/tejpalvirk/developer#readme",
+  "homepage": "https://github.com/tejpalvirk/contextmanager#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.7.0",
     "zod": "^3.22.4",

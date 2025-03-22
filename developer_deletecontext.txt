@@ -1,0 +1,56 @@
+Delete Context Tool for Developer
+
+A versatile tool for removing elements from the software development knowledge graph.
+This tool allows precise deletion of entities, relationships between entities, or specific observations from existing entities.
+It helps maintain an accurate and current representation of the development context as projects evolve.
+
+When to use this tool:
+- Removing deprecated or completed project components
+- Deleting obsolete relationships between development entities
+- Pruning outdated observations that no longer apply
+- Correcting errors in the knowledge graph
+- Cleaning up testing or prototype entities
+- Maintaining graph accuracy as project scope changes
+- Removing sensitive or confidential information
+- Archiving completed projects or components
+
+Key features:
+- Three distinct deletion operation types (entities, relations, observations)
+- Cascading deletion for entities (automatically removes related relations)
+- Precise deletion of specific observations without removing entire entities
+- Targeted relation removal with exact matching on from/to/type
+- Batch operations for efficient cleanup
+- JSON-formatted response with operation results
+- Secure validation before deletion
+- Clear error messages when operations fail
+
+Parameters explained:
+- type: The deletion operation type to perform, which must be one of:
+  * "entities" - Remove development entities and their relations
+  * "relations" - Remove specific relationships between entities
+  * "observations" - Remove specific observations from entities
+- data: Operation-specific data structure:
+  * For "entities": Array of entity names to delete
+  * For "relations": Array of objects with { from, to, relationType }
+  * For "observations": Array of objects with { entityName, observations[] }
+
+Deletion behavior by type:
+- "entities": Completely removes the specified entities and any relations where they appear
+- "relations": Removes only the exact relations specified, matching on all three attributes
+- "observations": Removes specific observations from entities while preserving the entities themselves
+
+Safety considerations:
+- Entity deletion cascades to relations, so be careful when deleting key entities
+- There is no "undo" operation, so confirm deletions carefully
+- Partial graph information can lead to inconsistent views
+- Relations require entities on both ends to exist
+
+You should:
+1. Identify the specific elements that need to be removed
+2. Choose the appropriate deletion type (entities, relations, or observations)
+3. Structure your data according to the deletion type's requirements
+4. Start with the most specific deletions (observations) before broader ones
+5. Verify the entities or relations exist before attempting deletion
+6. Check the operation result to confirm successful deletion
+7. Consider documenting major deletions as observations on related entities
+8. When removing an entire project, first delete its components for cleaner removal 

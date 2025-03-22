@@ -1,0 +1,57 @@
+Load Context Tool for Developer
+
+A powerful tool for retrieving rich, contextual information about specific software development entities, providing formatted details based on entity type.
+
+When to use this tool:
+- Retrieving detailed information about a specific project, component, feature, or other development entity
+- Exploring relationships between software development entities
+- Examining project status, components, features, tasks, and issues
+- Understanding the structure and elements of a software component
+- Reviewing milestone progress and completion metrics
+- Examining task details, dependencies, and assigned developers
+- Exploring feature implementations and technical requirements
+- Analyzing the project knowledge graph to understand entity relationships
+- Preparing for work on a specific entity by establishing context
+- Getting information about team members, technologies, and documentation
+
+Key features:
+- Provides contextually rich, formatted information about software development entities
+- Adapts output format based on entity type (project, component, feature, task, etc.)
+- Presents both direct entity information and related elements
+- Organizes information in a clear, hierarchical structure
+- Automatically identifies entity relationships and presents them systematically
+- Tracks loaded entities within the current session for continuity
+- Presents information in readable markdown format
+- Supports contextual understanding of complex software architectures
+- Shows relevant status information for project management
+
+Parameters explained:
+1. entityName: Required - The name of the entity to retrieve context for
+  - Example: "AuthService", "UserProfile", "LoginFeature"
+2. entityType: Optional - The type of entity being retrieved
+  - Default: "project"
+  - Accepted values: "project", "component", "task", "issue", "milestone", "decision", "feature", "technology", "documentation", "dependency", "developer"
+  - Helps the system format the output appropriately
+3. sessionId: Optional - The current session identifier
+  - Typically provided by startsession
+  - Used for tracking entity views within the session
+
+Each entity type returns specialized context information:
+- Project: Shows status, components, active features, active tasks, active issues, upcoming milestones, team members, and recent decisions
+- Component: Displays parent projects, implemented features, technologies used, active issues, documentation, team members, and dependencies
+- Feature: Shows status, priority, description, requirements, implementing components, and related tasks
+- Task: Displays project, status, priority, due date, description, assigned developers, related issues, and blocking items
+- Milestone: Shows status, deadline, description, progress percentage, deadline status, and tasks grouped by completion status
+- Other Entity Types: Shows observations and both incoming and outgoing relationships within the knowledge graph
+
+You should:
+- Specify the exact entity name for accurate retrieval
+- Provide the entity type when possible for optimally formatted results
+- Start with project entities to get a high-level overview
+- Explore components to understand technical architecture
+- Examine features to see functional requirements and implementations
+- Review tasks to understand specific work items and their status
+- Use milestone context to track progress toward deadlines
+- After retrieving context, follow up on specific entities of interest
+- Use in conjunction with startsession to maintain session tracking
+- Remember that this tool only retrieves existing information; use buildcontext to add new entities 
