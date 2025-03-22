@@ -10,7 +10,6 @@ Key features:
 - Creates links between completed tasks and projects
 - Updates project status and metadata
 - Creates new tasks for future development
-- Maintains session continuity with unique session IDs
 - Supports revision of previous stages when needed
 - Offers a comprehensive assembly stage that consolidates all session information
 - Organizes development activity into a coherent project history
@@ -82,4 +81,3 @@ You should:
 - If making a revision, specify which stage is being revised
 - Only mark nextStageNeeded as false on the final assembly stage
 - Review the final summary message to confirm all session details were recorded properly
-- Use the unique session ID consistently across all stages 

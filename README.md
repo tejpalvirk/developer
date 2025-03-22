@@ -2,10 +2,6 @@
 
 A powerful context management system designed specifically for software development teams. The Developer MCP Server maintains persistent context across your coding sessions, ensuring you never lose track of your project's structure, dependencies, and progress.
 
-## Why You Need This
-
-As a developer, you're juggling multiple projects, components, tasks, and dependencies. When you return to a codebase after days or weeks, it can take hours to rebuild your mental model of the system. The Developer MCP Server eliminates this overhead by remembering what you were working on and providing instant access to the context you need, exactly when you need it.
-
 ## Features
 
 - **Persistent Development Context**: Pick up exactly where you left off in your last session, with complete context about the components, issues, and tasks you were working on.
