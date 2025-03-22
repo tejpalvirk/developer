@@ -892,7 +892,7 @@ async function main() {
       toolDescriptions["deletecontext"],
       {
         type: z.enum(["entities", "relations", "observations"]).describe("Type of deletion operation: 'entities', 'relations', or 'observations'"),
-        data: z.any().describe("Data for the deletion operation, structure varies by type")
+        data: z.array(z.any()).describe("Data for the deletion operation, structure varies by type but must be an array")
       },
       async ({ type, data }) => {
         try {
