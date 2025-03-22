@@ -24,38 +24,37 @@ The endsession tool uses a sequential, multi-stage approach with 6 typical stage
 6. Assembly Stage: Consolidates all information and finalizes the session record
 
 Parameters explained:
-1. sessionId: Required - Unique identifier for the development session
-  - Obtained from the startsession tool
-  - Example: "dev_1234567890_abc123"
-2. stage: Required - Current stage of the endsession workflow
-  - Accepts: "summary", "achievements", "taskUpdates", "newTasks", "projectStatus", or "assembly"
-  - Each stage has specific data requirements and processing logic
-3. stageNumber: Required - The sequence number of the current stage
-  - Starts at 1 and typically progresses through 6 stages
-  - Used to track progress through the session documentation workflow
-4. totalStages: Required - Total number of stages planned for this workflow
-  - Typically 6 for the complete workflow
-  - Provides context for the progress within the overall process
-5. analysis: Optional - Text analysis or observations for the current stage
-  - Descriptive text explaining the work done in this stage
-  - Example: "Analyzed progress on the authentication system"
-6. stageData: Optional - Stage-specific structured data
-  - Structure varies by stage type:
-    * summary: { summary: "Session summary text", duration: "2 hours", focus: "ProjectName" }
-    * achievements: { achievements: ["Implemented feature X", "Fixed bug Y", "Refactored component Z"] }
-    * taskUpdates: { taskUpdates: [{ name: "Task1", status: "completed" }, { name: "Task2", status: "in_progress" }] }
-    * newTasks: { newTasks: [{ name: "NewTask1", description: "Implement feature A", priority: "high" }] }
-    * projectStatus: { projectName: "ProjectName", projectStatus: "in_progress", projectObservation: "Making good progress" }
-    * assembly: No stageData needed - automatically assembled from previous stages
-7. nextStageNeeded: Required - Whether additional stages are needed after this one
-  - Boolean value (true/false)
-  - Set to false on the final stage to complete the session
-8. isRevision: Optional - Whether this is revising a previous stage
-  - Boolean value (true/false)
-  - Default: false
-9. revisesStage: Optional - If revising, which stage number is being revised
-  - Required when isRevision is true
-  - Indicates which previous stage is being updated
+- sessionId: Required - Unique identifier for the development session
+  * Obtained from the startsession tool
+  * Example: "dev_1234567890_abc123"
+- stage: Required - Current stage of the endsession workflow
+  * Accepts: "summary", "achievements", "taskUpdates", "newTasks", "projectStatus", or "assembly"
+  * Each stage has specific data requirements and processing logic
+- stageNumber: Required - The sequence number of the current stage
+  * Starts at 1 and typically progresses through 6 stages
+  * Used to track progress through the session documentation workflow
+- totalStages: Required - Total number of stages planned for this workflow
+  * Typically 6 for the complete workflow
+  * Provides context for the progress within the overall process
+- analysis: Optional - Text analysis or observations for the current stage
+  * Descriptive text explaining the work done in this stage
+  * Example: "Analyzed progress on the authentication system"
+- stageData: Optional - Stage-specific structured data
+  * summary: { summary: "Session summary text", duration: "2 hours", focus: "ProjectName" }
+  * achievements: { achievements: ["Implemented feature X", "Fixed bug Y", "Refactored component Z"] }
+  * taskUpdates: { taskUpdates: [{ name: "Task1", status: "completed" }, { name: "Task2", status: "in_progress" }] }
+  * newTasks: { newTasks: [{ name: "NewTask1", description: "Implement feature A", priority: "high" }] }
+  * projectStatus: { projectName: "ProjectName", projectStatus: "in_progress", projectObservation: "Making good progress" }
+  * assembly: No stageData needed - automatically assembled from previous stages
+- nextStageNeeded: Required - Whether additional stages are needed after this one
+  * Boolean value (true/false)
+  * Set to false on the final stage to complete the session
+- isRevision: Optional - Whether this is revising a previous stage
+  * Boolean value (true/false)
+  * Default: false
+- revisesStage: Optional - If revising, which stage number is being revised
+  * Required when isRevision is true
+  * Indicates which previous stage is being updated
 
 When the endsession workflow completes (assembly stage with nextStageNeeded: false), the tool performs these updates:
 1. Achievement Entities: Creates entities for each achievement and links them to the focus project
