@@ -75,7 +75,7 @@ const toolDescriptions = {
 };
 for (const tool of Object.keys(toolDescriptions)) {
     try {
-        const descriptionFilePath = path.resolve(__dirname, "descriptions", `developer_${tool}.txt`);
+        const descriptionFilePath = path.resolve(__dirname, `developer_${tool}.txt`);
         if (existsSync(descriptionFilePath)) {
             toolDescriptions[tool] = readFileSync(descriptionFilePath, 'utf-8');
         }
