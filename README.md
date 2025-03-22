@@ -170,7 +170,7 @@ Add this to your `claude_desktop_config.json`:
       "command": "npx",
       "args": [
         "-y",
-        "github:tejpalvirk/contextmanager/developer"
+        "github:tejpalvirk/developer"
       ]
     }
   }
@@ -191,7 +191,7 @@ Then configure Claude Desktop:
 {
   "mcpServers": {
     "developer": {
-      "command": "mcp-server-developer"
+      "command": "contextmanager-developer"
     }
   }
 }
