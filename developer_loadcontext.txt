@@ -24,15 +24,15 @@ Key features:
 - Shows relevant status information for project management
 
 Parameters explained:
-1. entityName: Required - The name of the entity to retrieve context for
-  - Example: "AuthService", "UserProfile", "LoginFeature"
-2. entityType: Optional - The type of entity being retrieved
-  - Default: "project"
-  - Accepted values: "project", "component", "task", "issue", "milestone", "decision", "feature", "technology", "documentation", "dependency", "developer"
-  - Helps the system format the output appropriately
-3. sessionId: Optional - The current session identifier
-  - Typically provided by startsession
-  - Used for tracking entity views within the session
+- entityName: Required - The name of the entity to retrieve context for
+  * Example: "AuthService", "UserProfile", "LoginFeature"
+- entityType: Optional - The type of entity being retrieved
+  * Default: "project"
+  * Accepted values: "project", "component", "task", "issue", "milestone", "decision", "feature", "technology", "documentation", "dependency", "developer"
+  * Helps the system format the output appropriately
+- sessionId: Optional - The current session identifier
+  * Typically provided by startsession
+  * Used for tracking entity views within the session
 
 Each entity type returns specialized context information:
 - Project: Shows status, components, active features, active tasks, active issues, upcoming milestones, team members, and recent decisions
