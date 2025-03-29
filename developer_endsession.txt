@@ -6,9 +6,11 @@ Only use this tool when the user explicity requests it or provides explicit appr
 Key features:
 - Provides a structured, multi-stage workflow for session documentation
 - Records session achievements in the knowledge graph
-- Updates task statuses based on development progress
+- Updates task statuses using the has_status relation (inactive, active, complete)
+- Updates task priorities using the has_priority relation (low, high)
+- Updates task sequencing relationships using the precedes relation
 - Creates links between completed tasks and projects
-- Updates project status and metadata
+- Updates project status metadata
 - Creates new tasks for future development
 - Supports revision of previous stages when needed
 - Offers a comprehensive assembly stage that consolidates all session information
@@ -17,7 +19,7 @@ Key features:
 The endsession tool uses a sequential, multi-stage approach with 6 typical stages:
 1. Summary Stage: Records basic session information
 2. Achievements Stage: Documents specific accomplishments
-3. Task Updates Stage: Records status changes to existing tasks
+3. Task Updates Stage: Records status and priority changes to existing tasks
 4. New Tasks Stage: Defines new tasks created during the session
 5. Project Status Stage: Updates the overall project status
 6. Assembly Stage: Consolidates all information and finalizes the session record
@@ -41,9 +43,9 @@ Parameters explained:
 - stageData: Optional - Stage-specific structured data
   * summary: { summary: "Session summary text", duration: "2 hours", focus: "ProjectName" }
   * achievements: { achievements: ["Implemented feature X", "Fixed bug Y", "Refactored component Z"] }
-  * taskUpdates: { taskUpdates: [{ name: "Task1", status: "completed" }, { name: "Task2", status: "in_progress" }] }
-  * newTasks: { newTasks: [{ name: "NewTask1", description: "Implement feature A", priority: "high" }] }
-  * projectStatus: { projectName: "ProjectName", projectStatus: "in_progress", projectObservation: "Making good progress" }
+  * taskUpdates: { taskUpdates: [{ name: "Task1", status: "complete" }, { name: "Task2", status: "active", priority: "high" }] }
+  * newTasks: { newTasks: [{ name: "NewTask1", description: "Implement feature A", priority: "high", precedesTask: "Task2" }] }
+  * projectStatus: { projectName: "ProjectName", status: "active", observation: "Making good progress" }
   * assembly: No stageData needed - automatically assembled from previous stages
 - nextStageNeeded: Required - Whether additional stages are needed after this one
   * Boolean value (true/false)
@@ -54,13 +56,6 @@ Parameters explained:
 - revisesStage: Optional - If revising, which stage number is being revised
   * Required when isRevision is true
   * Indicates which previous stage is being updated
-
-When the endsession workflow completes (assembly stage with nextStageNeeded: false), the tool performs these updates:
-1. Achievement Entities: Creates entities for each achievement and links them to the focus project
-2. Task Status Updates: Updates the status of tasks mentioned in taskUpdates
-3. Project Status Update: Updates the project status, adds an updated timestamp, and records observations
-4. New Task Creation: Creates new task entities and links them to the project
-5. Session Recording: Marks the session as completed in persistent storage
 
 Return information:
 - success: Boolean indicating whether the operation succeeded
@@ -76,6 +71,9 @@ You should:
 - Complete all stages in order for comprehensive session documentation
 - Provide specific details in each stage for accurate knowledge graph updates
 - Be precise about task names to ensure they match existing tasks in the knowledge graph
+- Use valid status values (inactive, active, complete) when updating task status
+- Use valid priority values (low, high) when specifying task priorities
+- Specify task sequencing with the precedesTask field to establish task dependencies
 - Use clear, descriptive names for any new tasks
 - Include relevant observations for project status updates
 - If making a revision, specify which stage is being revised

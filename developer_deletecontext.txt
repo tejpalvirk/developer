@@ -11,6 +11,8 @@ When to use this tool:
 - Maintaining graph accuracy as project scope changes
 - Removing sensitive or confidential information
 - Archiving completed projects or components
+- Removing task sequencing relationships
+- Updating status or priority relationships
 
 Key features:
 - Three distinct deletion operation types (entities, relations, observations)
@@ -20,7 +22,6 @@ Key features:
 - Batch operations for efficient cleanup
 - JSON-formatted response with operation results
 - Secure validation before deletion
-- Clear error messages when operations fail
 
 Parameters explained:
 - type: The deletion operation type to perform, which must be one of:
@@ -42,6 +43,8 @@ Safety considerations:
 - There is no "undo" operation, so confirm deletions carefully
 - Partial graph information can lead to inconsistent views
 - Relations require entities on both ends to exist
+- Instead of deleting status or priority entities, prefer updating them using appropriate tools
+- Deleting task sequencing relations may disrupt project planning and dependencies
 
 You should:
 1. Identify the specific elements that need to be removed
@@ -49,6 +52,8 @@ You should:
 3. Structure your data according to the deletion type's requirements
 4. Start with the most specific deletions (observations) before broader ones
 5. Verify the entities or relations exist before attempting deletion
-6. Check the operation result to confirm successful deletion
-7. Consider documenting major deletions as observations on related entities
-8. When removing an entire project, first delete its components for cleaner removal 
+6. To update status or priority, create new has_status or has_priority relations rather than deleting old ones
+7. When removing task sequencing, consider how it affects other tasks and milestones
+8. Check the operation result to confirm successful deletion
+9. Consider documenting major deletions as observations on related entities
+10. When removing an entire project, first delete its components for cleaner removal 

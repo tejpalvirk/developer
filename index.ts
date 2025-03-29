@@ -34,46 +34,36 @@ const VALID_ENTITY_TYPES = [
   'feature',       // Specific functionality being developed
   'issue',         // Bug or problem to be fixed
   'task',          // Work item or activity needed for development
-  'developer',     // Team member working on the project
   'technology',    // Language, framework, or tool used
   'decision',      // Important technical or architectural decision
   'milestone',     // Key project deadline or phase
   'environment',   // Development, staging, production environments
   'documentation', // Project documentation
-  'requirement'    // Project requirement or specification
+  'requirement',   // Project requirement or specification
+  'status',        // Entity status (inactive, active, or complete)
+  'priority'       // Entity priority (low or high)
 ];
 
 // Software Development specific relation types
 const VALID_RELATION_TYPES = [
   'depends_on',     // Dependency relationship
   'implements',     // Component implements a feature
-  'assigned_to',    // Task is assigned to a developer
   'blocked_by',     // Task is blocked by an issue
   'uses',           // Component uses a technology
   'part_of',        // Component is part of a project
   'contains',       // Project contains a component
-  'works_on',       // Developer works on a project/component
   'related_to',     // General relationship
   'affects',        // Issue affects a component
   'resolves',       // Task resolves an issue
-  'created_by',     // Entity was created by a developer
   'documented_in',  // Component is documented in documentation
   'decided_in',     // Decision was made in a meeting
   'required_by',    // Feature is required by a requirement
   'has_status',     // Entity has a particular status
+  'has_priority',   // Entity has a particular priority
   'depends_on_milestone', // Task depends on reaching a milestone
   'precedes',       // Task precedes another task (for sequencing)
-  'reviews',        // Developer reviews a component
   'tested_in'       // Component is tested in an environment
 ];
-
-// Status values for different entity types
-const STATUS_VALUES = {
-  task: ['not_started', 'in_progress', 'blocked', 'complete', 'cancelled'],
-  issue: ['open', 'in_progress', 'resolved', 'closed', 'wont_fix'],
-  feature: ['planned', 'in_development', 'testing', 'released'],
-  milestone: ['planned', 'in_progress', 'reached', 'delayed']
-};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -161,6 +151,10 @@ interface KnowledgeGraph {
   relations: Relation[];
 }
 
+// Define the valid status and priority values
+const VALID_STATUS_VALUES = ['inactive', 'active', 'complete'];
+const VALID_PRIORITY_VALUES = ['low', 'high'];
+
 // The KnowledgeGraphManager class contains all operations to interact with the knowledge graph
 class KnowledgeGraphManager {
   private async loadGraph(): Promise<KnowledgeGraph> {
@@ -177,6 +171,119 @@ class KnowledgeGraphManager {
 
   private async saveGraph(graph: KnowledgeGraph): Promise<void> {
     await fs.writeFile(MEMORY_FILE_PATH, JSON.stringify(graph, null, 2), 'utf-8');
+  }
+
+  // Initialize status and priority entities
+  async initializeStatusAndPriority(): Promise<void> {
+    const graph = await this.loadGraph();
+    
+    // Create status entities if they don't exist
+    for (const statusValue of VALID_STATUS_VALUES) {
+      const statusName = `status:${statusValue}`;
+      if (!graph.entities.some(e => e.name === statusName && e.entityType === 'status')) {
+        graph.entities.push({
+          name: statusName,
+          entityType: 'status',
+          observations: [`A ${statusValue} status value`]
+        });
+      }
+    }
+    
+    // Create priority entities if they don't exist
+    for (const priorityValue of VALID_PRIORITY_VALUES) {
+      const priorityName = `priority:${priorityValue}`;
+      if (!graph.entities.some(e => e.name === priorityName && e.entityType === 'priority')) {
+        graph.entities.push({
+          name: priorityName,
+          entityType: 'priority',
+          observations: [`A ${priorityValue} priority value`]
+        });
+      }
+    }
+    
+    await this.saveGraph(graph);
+  }
+
+  // Helper method to get status of an entity
+  async getEntityStatus(entityName: string): Promise<string | null> {
+    const graph = await this.loadGraph();
+    
+    // Find status relation for this entity
+    const statusRelation = graph.relations.find(r => 
+      r.from === entityName && 
+      r.relationType === 'has_status'
+    );
+    
+    if (statusRelation) {
+      // Extract status value from the status entity name (status:value)
+      return statusRelation.to.split(':')[1];
+    }
+    
+    return null;
+  }
+  
+  // Helper method to get priority of an entity
+  async getEntityPriority(entityName: string): Promise<string | null> {
+    const graph = await this.loadGraph();
+    
+    // Find priority relation for this entity
+    const priorityRelation = graph.relations.find(r => 
+      r.from === entityName && 
+      r.relationType === 'has_priority'
+    );
+    
+    if (priorityRelation) {
+      // Extract priority value from the priority entity name (priority:value)
+      return priorityRelation.to.split(':')[1];
+    }
+    
+    return null;
+  }
+  
+  // Helper method to set status of an entity
+  async setEntityStatus(entityName: string, statusValue: string): Promise<void> {
+    if (!VALID_STATUS_VALUES.includes(statusValue)) {
+      throw new Error(`Invalid status value: ${statusValue}. Valid values are: ${VALID_STATUS_VALUES.join(', ')}`);
+    }
+    
+    const graph = await this.loadGraph();
+    
+    // Remove any existing status relations for this entity
+    graph.relations = graph.relations.filter(r => 
+      !(r.from === entityName && r.relationType === 'has_status')
+    );
+    
+    // Add new status relation
+    graph.relations.push({
+      from: entityName,
+      to: `status:${statusValue}`,
+      relationType: 'has_status'
+    });
+    
+    await this.saveGraph(graph);
+  }
+  
+  // Helper method to set priority of an entity
+  async setEntityPriority(entityName: string, priorityValue: string): Promise<void> {
+    if (!VALID_PRIORITY_VALUES.includes(priorityValue)) {
+      throw new Error(`Invalid priority value: ${priorityValue}. Valid values are: ${VALID_PRIORITY_VALUES.join(', ')}`);
+    }
+    
+    const graph = await this.loadGraph();
+    
+    // Remove any existing priority relations for this entity
+    graph.relations = graph.relations.filter(r => 
+      !(r.from === entityName && r.relationType === 'has_priority')
+    );
+    
+    // Add new priority relation
+    graph.relations.push({
+      from: entityName,
+      to: `priority:${priorityValue}`,
+      relationType: 'has_priority'
+    });
+    
+    await this.saveGraph(graph);
   }
 
   async createEntities(entities: Entity[]): Promise<Entity[]> {
@@ -338,21 +445,11 @@ class KnowledgeGraphManager {
     // Find components that are part of this project
     const components: Entity[] = [];
     
-    for (const relation of graph.relations) {
-      if (relation.relationType === 'contains' && relation.from === projectName) {
-        const component = graph.entities.find(e => e.name === relation.to && e.entityType === 'component');
-        if (component) {
-          components.push(component);
-        }
-      }
-    }
-    
-    // Find features, issues, tasks, milestones, and developers related to this project
+    // Find features, issues, tasks, milestones related to this project
     const features: Entity[] = [];
     const issues: Entity[] = [];
     const tasks: Entity[] = [];
     const milestones: Entity[] = [];
-    const developers: Entity[] = [];
     
     // Find entities directly related to the project
     for (const relation of graph.relations) {
@@ -363,13 +460,11 @@ class KnowledgeGraphManager {
         );
         
         if (relatedEntity) {
+          if (relatedEntity.entityType === 'component') components.push(relatedEntity);
           if (relatedEntity.entityType === 'feature') features.push(relatedEntity);
           if (relatedEntity.entityType === 'issue') issues.push(relatedEntity);
           if (relatedEntity.entityType === 'task') tasks.push(relatedEntity);
           if (relatedEntity.entityType === 'milestone') milestones.push(relatedEntity);
-          if (relatedEntity.entityType === 'developer' && relation.relationType === 'works_on') {
-            developers.push(relatedEntity);
-          }
         }
       }
     }
@@ -393,30 +488,43 @@ class KnowledgeGraphManager {
             if (relatedEntity.entityType === 'task' && !tasks.some(t => t.name === relatedEntity.name)) {
               tasks.push(relatedEntity);
             }
-            if (relatedEntity.entityType === 'developer' && relation.relationType === 'works_on' && 
-                !developers.some(d => d.name === relatedEntity.name)) {
-              developers.push(relatedEntity);
-            }
           }
         }
       }
     }
     
     // Get active tasks and issues
+    const statuses: Record<string, string> = {};
+    const priorities: Record<string, string> = {};
+    
+    // Load status and priority for tasks and issues
+    for (const entity of [...tasks, ...issues, ...features, ...milestones]) {
+      const status = await this.getEntityStatus(entity.name);
+      if (status) {
+        statuses[entity.name] = status;
+      }
+      
+      const priority = await this.getEntityPriority(entity.name);
+      if (priority) {
+        priorities[entity.name] = priority;
+      }
+    }
+    
+    // Filter active tasks and issues based on status
     const activeTasks = tasks.filter(task => {
-      const statusObs = task.observations.find(o => o.startsWith('Status:'));
-      return statusObs ? !['complete', 'cancelled'].includes(statusObs.split(':')[1].trim().toLowerCase()) : true;
+      const status = statuses[task.name];
+      return status ? status === 'active' : true;
     });
     
     const activeIssues = issues.filter(issue => {
-      const statusObs = issue.observations.find(o => o.startsWith('Status:'));
-      return statusObs ? !['resolved', 'closed', 'wont_fix'].includes(statusObs.split(':')[1].trim().toLowerCase()) : true;
+      const status = statuses[issue.name];
+      return status ? status === 'active' : true;
     });
     
     // Find upcoming milestones
     const upcomingMilestones = milestones.filter(milestone => {
-      const statusObs = milestone.observations.find(o => o.startsWith('Status:'));
-      return statusObs ? ['planned', 'in_progress'].includes(statusObs.split(':')[1].trim().toLowerCase()) : true;
+      const status = statuses[milestone.name];
+      return status ? status === 'active' : true;
     });
     
     // Get decision history
@@ -428,22 +536,48 @@ class KnowledgeGraphManager {
       )
     );
     
+    // Find task sequencing
+    const taskSequencing: Record<string, string[]> = {};
+    for (const task of tasks) {
+      const precedingTasks: string[] = [];
+      const followingTasks: string[] = [];
+      
+      // Find tasks that this task precedes
+      for (const relation of graph.relations) {
+        if (relation.from === task.name && relation.relationType === 'precedes') {
+          followingTasks.push(relation.to);
+        }
+        if (relation.to === task.name && relation.relationType === 'precedes') {
+          precedingTasks.push(relation.from);
+        }
+      }
+      
+      if (precedingTasks.length > 0 || followingTasks.length > 0) {
+        taskSequencing[task.name] = {
+          precedingTasks,
+          followingTasks
+        } as any;
+      }
+    }
+    
     return {
       project,
       components,
       activeFeatures: features.filter(f => {
-        const statusObs = f.observations.find(o => o.startsWith('Status:'));
-        return statusObs ? ['planned', 'in_development', 'testing'].includes(statusObs.split(':')[1].trim().toLowerCase()) : true;
+        const status = statuses[f.name];
+        return status ? status === 'active' : true;
       }),
       activeTasks,
       activeIssues,
       upcomingMilestones,
-      developers,
       allFeatures: features,
       allIssues: issues,
       allTasks: tasks,
       allMilestones: milestones,
-      recentDecisions: decisions.slice(0, 5)  // Limit to 5 most recent decisions
+      recentDecisions: decisions.slice(0, 5),  // Limit to 5 most recent decisions
+      statuses,  // Include status mapping for reference
+      priorities,  // Include priority mapping for reference
+      taskSequencing  // Include task sequencing information
     };
   }
   
@@ -489,18 +623,6 @@ class KnowledgeGraphManager {
         const technology = graph.entities.find(e => e.name === relation.to && e.entityType === 'technology');
         if (technology) {
           technologies.push(technology);
-        }
-      }
-    }
-    
-    // Find developers working on this component
-    const developers: Entity[] = [];
-    
-    for (const relation of graph.relations) {
-      if (relation.relationType === 'works_on' && relation.to === componentName) {
-        const developer = graph.entities.find(e => e.name === relation.from && e.entityType === 'developer');
-        if (developer) {
-          developers.push(developer);
         }
       }
     }
@@ -559,24 +681,42 @@ class KnowledgeGraphManager {
       }
     }
     
+    // Get statuses and priorities for tasks and issues
+    const statuses: Record<string, string> = {};
+    const priorities: Record<string, string> = {};
+    
+    // Load status and priority for tasks and issues
+    for (const entity of [...tasks, ...issues, ...features]) {
+      const status = await this.getEntityStatus(entity.name);
+      if (status) {
+        statuses[entity.name] = status;
+      }
+      
+      const priority = await this.getEntityPriority(entity.name);
+      if (priority) {
+        priorities[entity.name] = priority;
+      }
+    }
+    
     return {
       component,
       projects,
       features,
       technologies,
-      developers,
       activeIssues: issues.filter(issue => {
-        const statusObs = issue.observations.find(o => o.startsWith('Status:'));
-        return statusObs ? !['resolved', 'closed', 'wont_fix'].includes(statusObs.split(':')[1].trim().toLowerCase()) : true;
+        const status = statuses[issue.name];
+        return status ? status === 'active' : true;
       }),
       activeTasks: tasks.filter(task => {
-        const statusObs = task.observations.find(o => o.startsWith('Status:'));
-        return statusObs ? !['complete', 'cancelled'].includes(statusObs.split(':')[1].trim().toLowerCase()) : true;
+        const status = statuses[task.name];
+        return status ? status === 'active' : true;
       }),
       documentation,
       dependencies,
       allIssues: issues,
-      allTasks: tasks
+      allTasks: tasks,
+      statuses,
+      priorities
     };
   }
   
@@ -633,7 +773,7 @@ class KnowledgeGraphManager {
     const graph = await this.loadGraph();
     
     // Find the project
-    const project = graph.entities.find(e => e.name === projectName && e.entityType === 'project');
+    const project = graph.entities.find(e => e.name === projectName && e.entityType === "project");
     if (!project) {
       throw new Error(`Project '${projectName}' not found`);
     }
@@ -643,8 +783,8 @@ class KnowledgeGraphManager {
     
     // Direct decision relations to the project
     for (const relation of graph.relations) {
-      if (relation.relationType === 'related_to' && relation.to === projectName) {
-        const decision = graph.entities.find(e => e.name === relation.from && e.entityType === 'decision');
+      if (relation.relationType === "related_to" && relation.to === projectName) {
+        const decision = graph.entities.find(e => e.name === relation.from && e.entityType === "decision");
         if (decision) {
           decisions.push(decision);
         }
@@ -655,8 +795,8 @@ class KnowledgeGraphManager {
     const components: Entity[] = [];
     
     for (const relation of graph.relations) {
-      if (relation.relationType === 'contains' && relation.from === projectName) {
-        const component = graph.entities.find(e => e.name === relation.to && e.entityType === 'component');
+      if (relation.relationType === "contains" && relation.from === projectName) {
+        const component = graph.entities.find(e => e.name === relation.to && e.entityType === "component");
         if (component) {
           components.push(component);
         }
@@ -665,8 +805,8 @@ class KnowledgeGraphManager {
     
     for (const component of components) {
       for (const relation of graph.relations) {
-        if (relation.relationType === 'related_to' && relation.to === component.name) {
-          const decision = graph.entities.find(e => e.name === relation.from && e.entityType === 'decision');
+        if (relation.relationType === "related_to" && relation.to === component.name) {
+          const decision = graph.entities.find(e => e.name === relation.from && e.entityType === "decision");
           if (decision && !decisions.some(d => d.name === decision.name)) {
             decisions.push(decision);
           }
@@ -696,7 +836,7 @@ class KnowledgeGraphManager {
     const graph = await this.loadGraph();
     
     // Find the milestone
-    const milestone = graph.entities.find(e => e.name === milestoneName && e.entityType === 'milestone');
+    const milestone = graph.entities.find(e => e.name === milestoneName && e.entityType === "milestone");
     if (!milestone) {
       throw new Error(`Milestone '${milestoneName}' not found`);
     }
@@ -705,11 +845,22 @@ class KnowledgeGraphManager {
     const tasks: Entity[] = [];
     
     for (const relation of graph.relations) {
-      if (relation.relationType === 'related_to' && relation.to === milestoneName) {
-        const task = graph.entities.find(e => e.name === relation.from && e.entityType === 'task');
+      if (relation.relationType === "related_to" && relation.to === milestoneName) {
+        const task = graph.entities.find(e => e.name === relation.from && e.entityType === "task");
         if (task) {
           tasks.push(task);
         }
+      }
+    }
+    
+    // Get statuses for all tasks
+    const statuses: Record<string, string> = {};
+    
+    // Load status for tasks
+    for (const task of tasks) {
+      const status = await this.getEntityStatus(task.name);
+      if (status) {
+        statuses[task.name] = status;
       }
     }
     
@@ -719,12 +870,11 @@ class KnowledgeGraphManager {
     const notStartedTasks: Entity[] = [];
     
     for (const task of tasks) {
-      const statusObs = task.observations.find(o => o.startsWith('Status:'));
-      const status = statusObs ? statusObs.split(':')[1].trim().toLowerCase() : 'unknown';
+      const status = statuses[task.name] || 'inactive';
       
-      if (status === 'completed') {
+      if (status === 'complete') {
         completedTasks.push(task);
-      } else if (status === 'in progress') {
+      } else if (status === 'active') {
         inProgressTasks.push(task);
       } else {
         notStartedTasks.push(task);
@@ -737,25 +887,34 @@ class KnowledgeGraphManager {
       ? Math.round((completedTasks.length / totalTasks) * 100) 
       : 0;
     
-    // Get deadline if available
-    const deadlineObs = milestone.observations.find(o => o.startsWith('Deadline:'));
-    const deadline = deadlineObs ? deadlineObs.split(':')[1].trim() : null;
-    
-    // Check if deadline is approaching
-    let deadlineStatus = 'none';
-    if (deadline) {
-      const deadlineDate = new Date(deadline);
-      const today = new Date();
-      const daysUntilDeadline = Math.floor((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    // Find task sequencing
+    const taskSequencing: Record<string, any> = {};
+    for (const task of tasks) {
+      const precedingTasks: string[] = [];
+      const followingTasks: string[] = [];
       
-      if (daysUntilDeadline < 0) {
-        deadlineStatus = 'overdue';
-      } else if (daysUntilDeadline < 7) {
-        deadlineStatus = 'approaching';
-      } else {
-        deadlineStatus = 'ok';
+      // Find tasks that this task precedes
+      for (const relation of graph.relations) {
+        if (relation.from === task.name && relation.relationType === 'precedes') {
+          followingTasks.push(relation.to);
+        }
+        if (relation.to === task.name && relation.relationType === 'precedes') {
+          precedingTasks.push(relation.from);
+        }
+      }
+      
+      if (precedingTasks.length > 0 || followingTasks.length > 0) {
+        taskSequencing[task.name] = {
+          precedingTasks,
+          followingTasks
+        };
       }
     }
+    
+    // Determine if milestone can be considered complete
+    const milestoneComplete = tasks.length > 0 && tasks.every(task => 
+      statuses[task.name] === 'complete'
+    );
     
     return {
       milestone,
@@ -764,17 +923,16 @@ class KnowledgeGraphManager {
         completedTasks: completedTasks.length,
         inProgressTasks: inProgressTasks.length,
         notStartedTasks: notStartedTasks.length,
-        percentage: progressPercentage
+        percentage: progressPercentage,
+        complete: milestoneComplete
       },
-      deadline: deadline ? {
-        date: deadline,
-        status: deadlineStatus
-      } : null,
       tasks: {
         completed: completedTasks,
         inProgress: inProgressTasks,
         notStarted: notStartedTasks
-      }
+      },
+      taskSequencing,
+      statuses
     };
   }
 }
@@ -783,6 +941,9 @@ class KnowledgeGraphManager {
 async function main() {
   try {
     const knowledgeGraphManager = new KnowledgeGraphManager();
+    
+    // Initialize status and priority entities
+    await knowledgeGraphManager.initializeStatusAndPriority();
     
     // Initialize session states from persistent storage
     const sessionStates = await loadSessionStates();
@@ -1066,58 +1227,87 @@ async function main() {
               const summaryStage = stages.find(s => s.stage === "summary");
               return {
                 id,
-                date: summaryStage?.stageData?.date || "Unknown date",
                 project: summaryStage?.stageData?.project || "Unknown project",
                 focus: summaryStage?.stageData?.focus || "Unknown focus",
                 summary: summaryStage?.stageData?.summary || "No summary available"
               };
             })
-            .sort((a, b) => b.date.localeCompare(a.date))
             .slice(0, 3); // Default to showing 3 recent sessions
           
           // Get active development projects
-          const projectsQuery = await knowledgeGraphManager.searchNodes("entityType:project status:active");
-          const projects = projectsQuery.entities;
+          const graph = await knowledgeGraphManager.readGraph();
+          const activeProjects = [];
+          
+          // Find projects with active status
+          for (const entity of graph.entities) {
+            if (entity.entityType === 'project') {
+              const status = await knowledgeGraphManager.getEntityStatus(entity.name);
+              if (status === 'active') {
+                activeProjects.push(entity);
+              }
+            }
+          }
           
           // Get high-priority development tasks
-          const tasksQuery = await knowledgeGraphManager.searchNodes("entityType:task priority:high status:active");
-          const highPriorityTasks = tasksQuery.entities;
+          const highPriorityTasks = [];
+          
+          // Find tasks with high priority and active status
+          for (const entity of graph.entities) {
+            if (entity.entityType === 'task') {
+              const status = await knowledgeGraphManager.getEntityStatus(entity.name);
+              const priority = await knowledgeGraphManager.getEntityPriority(entity.name);
+              
+              if (status === 'active' && priority === 'high') {
+                highPriorityTasks.push(entity);
+              }
+            }
+          }
           
           // Get upcoming milestones
-          const milestonesQuery = await knowledgeGraphManager.searchNodes("entityType:milestone status:active");
-          const upcomingMilestones = milestonesQuery.entities;
+          const upcomingMilestones = [];
           
-          const date = new Date().toISOString().split('T')[0];
+          // Find milestones with active status
+          for (const entity of graph.entities) {
+            if (entity.entityType === 'milestone') {
+              const status = await knowledgeGraphManager.getEntityStatus(entity.name);
+              
+              if (status === 'active') {
+                upcomingMilestones.push(entity);
+              }
+            }
+          }
           
           let sessionsText = "No recent sessions found.";
           if (recentSessions.length > 0) {
             sessionsText = recentSessions.map(session => 
-              `- ${session.date}: ${session.project} - ${session.focus} - ${session.summary.substring(0, 100)}${session.summary.length > 100 ? '...' : ''}`
+              `- ${session.project} - ${session.focus} - ${session.summary.substring(0, 100)}${session.summary.length > 100 ? '...' : ''}`
             ).join('\n');
           }
           
           let projectsText = "No active projects found.";
-          if (projects.length > 0) {
-            projectsText = projects.map(project => {
-              const status = project.observations.find(o => o.startsWith("status:"))?.substring(7) || "Unknown";
-              return `- ${project.name} (${status})`;
+          if (activeProjects.length > 0) {
+            projectsText = activeProjects.map(project => {
+              const obsPreview = project.observations.length > 0 ? 
+                `: ${project.observations[0].substring(0, 60)}${project.observations[0].length > 60 ? '...' : ''}` : '';
+              return `- ${project.name}${obsPreview}`;
             }).join('\n');
           }
           
           let tasksText = "No high-priority tasks found.";
           if (highPriorityTasks.length > 0) {
             tasksText = highPriorityTasks.map(task => {
-              const status = task.observations.find(o => o.startsWith("status:"))?.substring(7) || "Unknown";
-              const assignee = task.observations.find(o => o.startsWith("assignee:"))?.substring(9) || "Unassigned";
-              return `- ${task.name} (${status}, Assignee: ${assignee})`;
+              const obsPreview = task.observations.length > 0 ? 
+                `: ${task.observations[0].substring(0, 60)}${task.observations[0].length > 60 ? '...' : ''}` : '';
+              return `- ${task.name}${obsPreview}`;
             }).join('\n');
           }
           
           let milestonesText = "No upcoming milestones found.";
           if (upcomingMilestones.length > 0) {
             milestonesText = upcomingMilestones.map(milestone => {
-              const dueDate = milestone.observations.find(o => o.startsWith("due_date:"))?.substring(9) || "No due date";
-              return `- ${milestone.name} (Due: ${dueDate})`;
+              const obsPreview = milestone.observations.length > 0 ? 
+                `: ${milestone.observations[0].substring(0, 60)}${milestone.observations[0].length > 60 ? '...' : ''}` : '';
+              return `- ${milestone.name}${obsPreview}`;
             }).join('\n');
           }
           
@@ -1157,7 +1347,7 @@ To load specific context based on the user's choice, use the \`loadcontext\` too
 
     /**
      * Load the context for a specific entity.
-     * Valid entity types are: project, component, task, issue, milestone, decision, feature, technology, documentation, dependency, developer.
+     * Valid entity types are: project, component, task, issue, milestone, decision, feature, technology, documentation, dependency.
      */
     server.tool(
       "loadcontext",
@@ -1165,7 +1355,7 @@ To load specific context based on the user's choice, use the \`loadcontext\` too
       {
         entityName: z.string(),
         entityType: z.string().optional(),
-        sessionId: z.string().optional() // Optional to maintain backward compatibility
+        sessionId: z.string().optional() 
       },
       async ({ entityName, entityType = "project", sessionId }) => {
         try {
@@ -1192,8 +1382,7 @@ To load specific context based on the user's choice, use the \`loadcontext\` too
             await saveSessionStates(sessionStates);
           }
           
-          // Get the entity
-          // Changed from using 'name:' prefix to directly searching by the entity name
+          // Get entity
           const entityGraph = await knowledgeGraphManager.searchNodes(entityName);
           if (entityGraph.entities.length === 0) {
             throw new Error(`Entity ${entityName} not found`);
@@ -1205,6 +1394,15 @@ To load specific context based on the user's choice, use the \`loadcontext\` too
             throw new Error(`Entity ${entityName} not found`);
           }
           
+          // Get status and priority
+          const status = await knowledgeGraphManager.getEntityStatus(entityName) || "unknown";
+          const priority = await knowledgeGraphManager.getEntityPriority(entityName);
+          
+          // Format observations for display (show all observations)
+          const observationsList = entity.observations.length > 0 
+            ? entity.observations.map(obs => `- ${obs}`).join("\n")
+            : "No observations";
+          
           // Different context loading based on entity type
           let contextMessage = "";
           
@@ -1213,58 +1411,50 @@ To load specific context based on the user's choice, use the \`loadcontext\` too
             const projectStatus = await knowledgeGraphManager.getProjectStatus(entityName);
             
             // Format project context
-            const status = entity.observations.find(o => o.startsWith("Status:"))?.substring(7) || "Unknown";
-            const updated = entity.observations.find(o => o.startsWith("updated:"))?.substring(8) || "Unknown";
-            const description = entity.observations.find(o => !o.startsWith("Status:") && !o.startsWith("updated:"));
-            
             const componentsText = projectStatus.components?.map((component: Entity) => {
-              const desc = component.observations.find(o => !o.startsWith("Status:"));
-              return `- **${component.name}**: ${desc || "No description"}`;
+              return `- **${component.name}**${component.observations.length > 0 ? `: ${component.observations[0]}` : ''}`;
             }).join("\n") || "No components found";
             
             const featuresText = projectStatus.activeFeatures?.map((feature: Entity) => {
-              const statusObs = feature.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-              const desc = feature.observations.find(o => !o.startsWith("Status:"));
-              return `- **${feature.name}** (${statusObs}): ${desc || "No description"}`;
+              const featureStatus = projectStatus.statuses[feature.name] || "unknown";
+              return `- **${feature.name}** (${featureStatus})${feature.observations.length > 0 ? `: ${feature.observations.join(', ')}` : ''}`;
             }).join("\n") || "No active features found";
             
             const tasksText = projectStatus.activeTasks?.map((task: Entity) => {
-              const statusObs = task.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-              const desc = task.observations.find(o => !o.startsWith("Status:") && !o.startsWith("priority:"));
-              const priority = task.observations.find(o => o.startsWith("priority:"))?.substring(9) || "medium";
-              return `- **${task.name}** (${statusObs}, ${priority} priority): ${desc || "No description"}`;
+              const taskStatus = projectStatus.statuses[task.name] || "unknown";
+              const taskPriority = projectStatus.priorities[task.name] || "normal";
+              return `- **${task.name}** (${taskStatus}, ${taskPriority} priority)${task.observations.length > 0 ? `: ${task.observations.join(', ')}` : ''}`;
             }).join("\n") || "No active tasks found";
             
             const issuesText = projectStatus.activeIssues?.map((issue: Entity) => {
-              const statusObs = issue.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-              const desc = issue.observations.find(o => !o.startsWith("Status:"));
-              return `- **${issue.name}** (${statusObs}): ${desc || "No description"}`;
+              const issueStatus = projectStatus.statuses[issue.name] || "unknown";
+              return `- **${issue.name}** (${issueStatus})${issue.observations.length > 0 ? `: ${issue.observations.join(', ')}` : ''}`;
             }).join("\n") || "No active issues found";
             
             const milestonesText = projectStatus.upcomingMilestones?.map((milestone: Entity) => {
-              const statusObs = milestone.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-              const deadline = milestone.observations.find(o => o.startsWith("Deadline:"))?.substring(9) || "No deadline";
-              const desc = milestone.observations.find(o => !o.startsWith("Status:") && !o.startsWith("Deadline:"));
-              return `- **${milestone.name}** (${statusObs}, due: ${deadline}): ${desc || "No description"}`;
+              const milestoneStatus = projectStatus.statuses[milestone.name] || "unknown";
+              return `- **${milestone.name}** (${milestoneStatus})${milestone.observations.length > 0 ? `: ${milestone.observations.join(', ')}` : ''}`;
             }).join("\n") || "No upcoming milestones found";
             
-            const developersText = projectStatus.developers?.map((developer: Entity) => {
-              const role = developer.observations.find(o => o.startsWith("role:"))?.substring(5) || "Unknown role";
-              return `- **${developer.name}** (${role})`;
-            }).join("\n") || "No developers assigned";
-            
             const decisionsText = projectStatus.recentDecisions?.map((decision: Entity) => {
-              const date = decision.observations.find(o => o.startsWith("Date:"))?.substring(5) || "Unknown date";
-              const desc = decision.observations.find(o => !o.startsWith("Date:"));
-              return `- **${decision.name}** (${date}): ${desc || "No description"}`;
+              return `- **${decision.name}**${decision.observations.length > 0 ? `: ${decision.observations.join(', ')}` : ''}`;
             }).join("\n") || "No recent decisions";
+            
+            // Task sequencing information
+            const sequencingText = Object.keys(projectStatus.taskSequencing || {}).length > 0
+              ? Object.entries(projectStatus.taskSequencing).map(([taskName, sequence]: [string, any]) => {
+                  return `- **${taskName}**:\n  - Precedes: ${sequence.followingTasks.length > 0 ? sequence.followingTasks.join(', ') : 'None'}\n  - Follows: ${sequence.precedingTasks.length > 0 ? sequence.precedingTasks.join(', ') : 'None'}`;
+                }).join("\n")
+              : "No task sequencing information available";
             
             contextMessage = `# Software Development Project Context: ${entityName}
 
 ## Project Overview
 - **Status**: ${status}
-- **Last Updated**: ${updated}
-- **Description**: ${description || "No description"}
+- **Priority**: ${priority || "N/A"}
+
+## Observations
+${observationsList}
 
 ## Components
 ${componentsText}
@@ -1281,61 +1471,53 @@ ${issuesText}
 ## Upcoming Milestones
 ${milestonesText}
 
-## Team Members
-${developersText}
-
 ## Recent Decisions
-${decisionsText}`;
+${decisionsText}
+
+## Task Sequencing
+${sequencingText}`;
           } 
           else if (entityType === "component") {
             // Get component context
             const componentContext = await knowledgeGraphManager.getComponentContext(entityName);
             
-            // Format component context message
-            const description = entity.observations.find(o => !o.startsWith("Status:"));
-            
             const projectsText = componentContext.projects?.map((project: Entity) => {
-              return `- **${project.name}**`;
+              return `- **${project.name}**${project.observations.length > 0 ? `: ${project.observations.join(', ')}` : ''}`;
             }).join("\n") || "No parent projects found";
             
             const featuresText = componentContext.features?.map((feature: Entity) => {
-              const statusObs = feature.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-              const desc = feature.observations.find(o => !o.startsWith("Status:"));
-              return `- **${feature.name}** (${statusObs}): ${desc || "No description"}`;
+              const featureStatus = componentContext.statuses[feature.name] || "unknown";
+              return `- **${feature.name}** (${featureStatus})${feature.observations.length > 0 ? `: ${feature.observations.join(', ')}` : ''}`;
             }).join("\n") || "No implemented features found";
             
             const technologiesText = componentContext.technologies?.map((tech: Entity) => {
-              const desc = tech.observations.find(o => !o.startsWith("version:"));
-              const version = tech.observations.find(o => o.startsWith("version:"))?.substring(8) || "unknown version";
-              return `- **${tech.name}** (${version}): ${desc || "No description"}`;
+              return `- **${tech.name}**${tech.observations.length > 0 ? `: ${tech.observations.join(', ')}` : ''}`;
             }).join("\n") || "No technologies specified";
             
             const issuesText = componentContext.activeIssues?.map((issue: Entity) => {
-              const statusObs = issue.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-              const desc = issue.observations.find(o => !o.startsWith("Status:"));
-              return `- **${issue.name}** (${statusObs}): ${desc || "No description"}`;
+              const issueStatus = componentContext.statuses[issue.name] || "unknown";
+              return `- **${issue.name}** (${issueStatus})${issue.observations.length > 0 ? `: ${issue.observations.join(', ')}` : ''}`;
             }).join("\n") || "No active issues found";
             
-            const developersText = componentContext.developers?.map((developer: Entity) => {
-              const role = developer.observations.find(o => o.startsWith("role:"))?.substring(5) || "Unknown role";
-              return `- **${developer.name}** (${role})`;
-            }).join("\n") || "No developers assigned";
-            
             const dependenciesText = componentContext.dependencies?.map((dep: Entity) => {
-              return `- **${dep.name}** (${dep.entityType})`;
+              return `- **${dep.name}** (${dep.entityType})${dep.observations.length > 0 ? `: ${dep.observations.join(', ')}` : ''}`;
             }).join("\n") || "No dependencies found";
             
             const documentationText = componentContext.documentation?.map((doc: Entity) => {
-              const updated = doc.observations.find(o => o.startsWith("updated:"))?.substring(8) || "Unknown";
-              const desc = doc.observations.find(o => !o.startsWith("updated:"));
-              return `- **${doc.name}** (Updated: ${updated}): ${desc || "No description"}`;
+              return `- **${doc.name}**${doc.observations.length > 0 ? `: ${doc.observations.join(', ')}` : ''}`;
             }).join("\n") || "No documentation found";
             
             contextMessage = `# Component Context: ${entityName}
 
 ## Overview
-- **Description**: ${description || "No description"}
-- **Part of Projects**: ${projectsText}
+- **Status**: ${status}
+- **Priority**: ${priority || "N/A"}
+
+## Observations
+${observationsList}
+
+## Part of Projects
+${projectsText}
 
 ## Technologies
 ${technologiesText}
@@ -1350,19 +1532,11 @@ ${dependenciesText}
 ${issuesText}
 
 ## Documentation
-${documentationText}
-
-## Team Members
-${developersText}`;
+${documentationText}`;
           }
           else if (entityType === "feature") {
             // Get related entities
             const relatedEntities = await knowledgeGraphManager.getRelatedEntities(entityName);
-            
-            // Format feature context message
-            const statusObs = entity.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-            const description = entity.observations.find(o => !o.startsWith("Status:") && !o.startsWith("priority:"));
-            const priority = entity.observations.find(o => o.startsWith("priority:"))?.substring(9) || "medium";
             
             // Find implementing components
             const implementingComponents = relatedEntities.incomingRelations
@@ -1370,7 +1544,7 @@ ${developersText}`;
               .map((rel: { relation: Relation; source: Entity }) => rel.source);
             
             const componentsText = implementingComponents.map((component: Entity) => {
-              return `- **${component.name}**`;
+              return `- **${component.name}**${component.observations.length > 0 ? `: ${component.observations.join(', ')}` : ''}`;
             }).join("\n") || "No implementing components found";
             
             // Find related tasks
@@ -1384,10 +1558,18 @@ ${developersText}`;
               )
               .filter((entity): entity is Entity => entity !== undefined);
             
+            // Get status for each task
+            const taskStatuses: Record<string, string> = {};
+            for (const task of relatedTasks) {
+              const taskStatus = await knowledgeGraphManager.getEntityStatus(task.name);
+              if (taskStatus) {
+                taskStatuses[task.name] = taskStatus;
+              }
+            }
+            
             const tasksText = relatedTasks.map((task: Entity) => {
-              const statusObs = task.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-              const desc = task.observations.find(o => !o.startsWith("Status:") && !o.startsWith("priority:"));
-              return `- **${task.name}** (${statusObs}): ${desc || "No description"}`;
+              const taskStatus = taskStatuses[task.name] || "unknown";
+              return `- **${task.name}** (${taskStatus})${task.observations.length > 0 ? `: ${task.observations.join(', ')}` : ''}`;
             }).join("\n") || "No related tasks found";
             
             // Find requirements
@@ -1396,16 +1578,17 @@ ${developersText}`;
               .map((rel: { relation: Relation; source: Entity }) => rel.source);
             
             const requirementsText = requirements.map((req: Entity) => {
-              const desc = req.observations.find(o => !o.startsWith("priority:"));
-              return `- **${req.name}**: ${desc || "No description"}`;
+              return `- **${req.name}**${req.observations.length > 0 ? `: ${req.observations.join(', ')}` : ''}`;
             }).join("\n") || "No requirements specified";
             
             contextMessage = `# Feature Context: ${entityName}
 
 ## Overview
-- **Status**: ${statusObs}
-- **Priority**: ${priority}
-- **Description**: ${description || "No description"}
+- **Status**: ${status}
+- **Priority**: ${priority || "normal"}
+
+## Observations
+${observationsList}
 
 ## Requirements
 ${requirementsText}
@@ -1420,32 +1603,24 @@ ${tasksText}`;
             // Get related entities
             const relatedEntities = await knowledgeGraphManager.getRelatedEntities(entityName);
             
-            // Format task context message
-            const statusObs = entity.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-            const description = entity.observations.find(o => !o.startsWith("Status:") && !o.startsWith("priority:") && !o.startsWith("due:"));
-            const priority = entity.observations.find(o => o.startsWith("priority:"))?.substring(9) || "medium";
-            const due = entity.observations.find(o => o.startsWith("due:"))?.substring(4) || "No deadline";
-            
             // Find related issues
             const relatedIssues = relatedEntities.outgoingRelations
               .filter((rel: { relation: Relation; target: Entity }) => rel.relation.relationType === "resolves")
               .map((rel: { relation: Relation; target: Entity }) => rel.target);
             
+            // Get status for each issue
+            const issueStatuses: Record<string, string> = {};
+            for (const issue of relatedIssues) {
+              const issueStatus = await knowledgeGraphManager.getEntityStatus(issue.name);
+              if (issueStatus) {
+                issueStatuses[issue.name] = issueStatus;
+              }
+            }
+            
             const issuesText = relatedIssues.map((issue: Entity) => {
-              const statusObs = issue.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-              const desc = issue.observations.find(o => !o.startsWith("Status:"));
-              return `- **${issue.name}** (${statusObs}): ${desc || "No description"}`;
+              const issueStatus = issueStatuses[issue.name] || "unknown";
+              return `- **${issue.name}** (${issueStatus})${issue.observations.length > 0 ? `: ${issue.observations.join(', ')}` : ''}`;
             }).join("\n") || "No related issues found";
-            
-            // Find assigned developer
-            const assignedDevelopers = relatedEntities.incomingRelations
-              .filter((rel: { relation: Relation; source: Entity }) => rel.relation.relationType === "assigned_to")
-              .map((rel: { relation: Relation; source: Entity }) => rel.source);
-            
-            const assigneesText = assignedDevelopers.map((dev: Entity) => {
-              const role = dev.observations.find(o => o.startsWith("role:"))?.substring(5) || "Unknown role";
-              return `- **${dev.name}** (${role})`;
-            }).join("\n") || "No developers assigned";
             
             // Find parent project
             const parentProjects = relatedEntities.incomingRelations
@@ -1459,96 +1634,93 @@ ${tasksText}`;
               .filter((rel: { relation: Relation; target: Entity }) => rel.relation.relationType === "blocked_by")
               .map((rel: { relation: Relation; target: Entity }) => rel.target);
             
+            // Get status for each blocking item
+            const blockingStatuses: Record<string, string> = {};
+            for (const item of blockingItems) {
+              const itemStatus = await knowledgeGraphManager.getEntityStatus(item.name);
+              if (itemStatus) {
+                blockingStatuses[item.name] = itemStatus;
+              }
+            }
+            
             const blockingText = blockingItems.map((item: Entity) => {
-              const statusObs = item.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-              return `- **${item.name}** (${item.entityType}, ${statusObs})`;
+              const itemStatus = blockingStatuses[item.name] || "unknown";
+              return `- **${item.name}** (${item.entityType}, ${itemStatus})${item.observations.length > 0 ? `: ${item.observations.join(', ')}` : ''}`;
             }).join("\n") || "No blocking items";
+            
+            // Find task sequencing
+            const precedingTasks: string[] = [];
+            const followingTasks: string[] = [];
+            
+            // Get the graph to find sequencing relations
+            const graph = await knowledgeGraphManager.readGraph();
+            
+            for (const relation of graph.relations) {
+              if (relation.from === entityName && relation.relationType === 'precedes') {
+                followingTasks.push(relation.to);
+              }
+              if (relation.to === entityName && relation.relationType === 'precedes') {
+                precedingTasks.push(relation.from);
+              }
+            }
+            
+            const sequencingText = `### Preceding Tasks\n${precedingTasks.length > 0 ? precedingTasks.map(t => `- ${t}`).join('\n') : 'None'}\n\n### Following Tasks\n${followingTasks.length > 0 ? followingTasks.map(t => `- ${t}`).join('\n') : 'None'}`;
             
             contextMessage = `# Task Context: ${entityName}
 
 ## Overview
 - **Project**: ${projectName}
-- **Status**: ${statusObs}
-- **Priority**: ${priority}
-- **Due Date**: ${due}
-- **Description**: ${description || "No description"}
+- **Status**: ${status}
+- **Priority**: ${priority || "normal"}
 
-## Assigned To
-${assigneesText}
+## Observations
+${observationsList}
 
 ## Related Issues
 ${issuesText}
 
 ## Blocked By
-${blockingText}`;
+${blockingText}
+
+## Task Sequencing
+${sequencingText}`;
           }
           else if (entityType === "milestone") {
             // Get milestone progress
             const milestoneProgress = await knowledgeGraphManager.getMilestoneProgress(entityName);
             
-            // Format milestone context message
-            const statusObs = entity.observations.find(o => o.startsWith("Status:"))?.substring(7) || "unknown";
-            const description = entity.observations.find(o => !o.startsWith("Status:") && !o.startsWith("Deadline:"));
-            const deadline = entity.observations.find(o => o.startsWith("Deadline:"))?.substring(9) || "No deadline";
-            
             contextMessage = `# Milestone Context: ${entityName}
 
 ## Overview
-- **Status**: ${statusObs}
-- **Deadline**: ${deadline}
-- **Description**: ${description || "No description"}
+- **Status**: ${status}
 - **Progress**: ${milestoneProgress.progress?.percentage || 0}% complete
+- **Complete**: ${milestoneProgress.progress?.complete ? "Yes" : "No"}
 
-## Deadline Status
-${milestoneProgress.deadline?.status === "overdue" ? "⚠️ **OVERDUE**" : 
-  milestoneProgress.deadline?.status === "approaching" ? "⚠️ **DEADLINE APPROACHING**" : 
-  "✅ On track"}
+## Observations
+${observationsList}
 
 ## Tasks
 ### Completed (${milestoneProgress.tasks?.completed?.length || 0})
 ${milestoneProgress.tasks?.completed?.map((task: Entity) => {
-  const desc = task.observations.find(o => !o.startsWith("Status:") && !o.startsWith("priority:"));
-  return `- **${task.name}**: ${desc || "No description"}`;
+  return `- **${task.name}**${task.observations.length > 0 ? `: ${task.observations.join(', ')}` : ''}`;
 }).join("\n") || "No completed tasks"}
 
 ### In Progress (${milestoneProgress.tasks?.inProgress?.length || 0})
 ${milestoneProgress.tasks?.inProgress?.map((task: Entity) => {
-  const desc = task.observations.find(o => !o.startsWith("Status:") && !o.startsWith("priority:"));
-  return `- **${task.name}**: ${desc || "No description"}`;
+  return `- **${task.name}**${task.observations.length > 0 ? `: ${task.observations.join(', ')}` : ''}`;
 }).join("\n") || "No in-progress tasks"}
 
 ### Not Started (${milestoneProgress.tasks?.notStarted?.length || 0})
 ${milestoneProgress.tasks?.notStarted?.map((task: Entity) => {
-  const desc = task.observations.find(o => !o.startsWith("Status:") && !o.startsWith("priority:"));
-  return `- **${task.name}**: ${desc || "No description"}`;
-}).join("\n") || "No not-started tasks"}`;
-          }
-          else {
-            // Generic entity context for other entity types
-            const relatedEntities = await knowledgeGraphManager.getRelatedEntities(entityName);
-            
-            // Build a text representation of related entities
-            const incomingText = relatedEntities.incomingRelations.map((rel: { relation: Relation; source: Entity }) => {
-              return `- **${rel.source.name}** (${rel.source.entityType}) → ${rel.relation.relationType} → ${entityName}`;
-            }).join("\n") || "No incoming relations";
-            
-            const outgoingText = relatedEntities.outgoingRelations.map((rel: { relation: Relation; target: Entity }) => {
-              return `- **${entityName}** → ${rel.relation.relationType} → **${rel.target.name}** (${rel.target.entityType})`;
-            }).join("\n") || "No outgoing relations";
-            
-            // Format observations
-            const observationsText = entity.observations.map(obs => `- ${obs}`).join("\n") || "No observations";
-            
-            contextMessage = `# Entity Context: ${entityName} (${entityType})
+  return `- **${task.name}**${task.observations.length > 0 ? `: ${task.observations.join(', ')}` : ''}`;
+}).join("\n") || "No not-started tasks"}
 
-## Observations
-${observationsText}
-
-## Incoming Relations
-${incomingText}
-
-## Outgoing Relations
-${outgoingText}`;
+## Task Sequencing
+${Object.keys(milestoneProgress.taskSequencing || {}).length > 0
+  ? Object.entries(milestoneProgress.taskSequencing).map(([taskName, sequence]: [string, any]) => {
+      return `- **${taskName}**:\n  - Precedes: ${sequence.followingTasks.length > 0 ? sequence.followingTasks.join(', ') : 'None'}\n  - Follows: ${sequence.precedingTasks.length > 0 ? sequence.precedingTasks.join(', ') : 'None'}`;
+    }).join("\n")
+  : "No task sequencing information available"}`;
           }
           
           return {
@@ -1666,11 +1838,7 @@ ${outgoingText}`;
       const newTasksStage = stages.find(s => s.stage === "newTasks");
       const projectStatusStage = stages.find(s => s.stage === "projectStatus");
       
-      // Get current date
-      const date = new Date().toISOString().split('T')[0];
-      
       return {
-        date,
         summary: summaryStage?.stageData?.summary || "",
         duration: summaryStage?.stageData?.duration || "unknown",
         focus: summaryStage?.stageData?.focus || "",
@@ -1821,7 +1989,6 @@ ${outgoingText}`;
             
             try {
               // Parse arguments
-              const date = args.date;
               const summary = args.summary;
               const duration = args.duration;
               const focus = args.focus;
@@ -1836,7 +2003,7 @@ ${outgoingText}`;
               
               // 2. Create achievement entities and link to focus project
               const achievementEntities = achievements.map((achievement: string, i: number) => ({
-                name: `Achievement_${date.replace(/-/g, "")}_${i + 1}`,
+                name: `Achievement_${new Date().getTime()}_${i + 1}`,
                 entityType: "decision",
                 observations: [achievement]
               }));
@@ -1861,18 +2028,18 @@ ${outgoingText}`;
                 if (taskGraph.entities.length > 0) {
                   // Update the status observation
                   const taskEntity = taskGraph.entities[0];
-                  const observations = taskEntity.observations.filter(o => !o.startsWith("status:"));
-                  observations.push(`status:${task.status}`);
                   
-                  await knowledgeGraphManager.deleteEntities([task.name]);
-                  await knowledgeGraphManager.createEntities([{
-                    name: task.name,
-                    entityType: "task",
-                    observations
-                  }]);
+                  // Set task status
+                  try {
+                    const statusValue = task.status === "completed" || task.status === "complete" ? "complete" :
+                                       task.status === "in_progress" ? "active" : "inactive";
+                    await knowledgeGraphManager.setEntityStatus(task.name, statusValue);
+                  } catch (error) {
+                    console.error(`Error updating status for task ${task.name}: ${error}`);
+                  }
                   
                   // If completed, link to this session
-                  if (task.status === "complete") {
+                  if (task.status === "complete" || task.status === "completed") {
                     await knowledgeGraphManager.createRelations([{
                       from: focus,
                       to: task.name,
@@ -1886,35 +2053,79 @@ ${outgoingText}`;
               const projectGraph = await knowledgeGraphManager.searchNodes(`name:${projectUpdate.name}`);
               if (projectGraph.entities.length > 0) {
                 const projectEntity = projectGraph.entities[0];
-                let observations = projectEntity.observations.filter(o => !o.startsWith("status:") && !o.startsWith("updated:"));
-                observations.push(`status:${projectUpdate.status}`);
-                observations.push(`updated:${date}`);
                 
+                // Add project observation if specified
                 if (projectUpdate.observation) {
-                  observations.push(projectUpdate.observation);
+                  await knowledgeGraphManager.addObservations([{
+                    entityName: projectUpdate.name,
+                    contents: [projectUpdate.observation]
+                  }]);
                 }
                 
-                await knowledgeGraphManager.deleteEntities([projectUpdate.name]);
-                await knowledgeGraphManager.createEntities([{
-                  name: projectUpdate.name,
-                  entityType: "project",
-                  observations
-                }]);
+                // Set project status
+                try {
+                  const statusValue = projectUpdate.status === "completed" || projectUpdate.status === "complete" ? "complete" :
+                                     projectUpdate.status === "in_progress" || projectUpdate.status === "active" ? "active" : "inactive";
+                  await knowledgeGraphManager.setEntityStatus(projectUpdate.name, statusValue);
+                } catch (error) {
+                  console.error(`Error updating status for project ${projectUpdate.name}: ${error}`);
+                }
               }
               
               // 5. Create new tasks
               if (newTasks && newTasks.length > 0) {
-                const taskEntities = newTasks.map((task: {name: string, description: string, priority?: string}, i: number) => ({
+                const taskEntities = newTasks.map((task: {name: string, description: string, priority?: string, precedes?: string, follows?: string}, i: number) => ({
                   name: task.name,
                   entityType: "task",
                   observations: [
-                    task.description,
-                    `status:not_started`,
-                    `priority:${task.priority || "medium"}`
+                    task.description
                   ]
                 }));
                 
                 await knowledgeGraphManager.createEntities(taskEntities);
+                
+                // Set status, priority, and sequencing for each task
+                for (const task of newTasks) {
+                  // Set task status to active by default
+                  try {
+                    await knowledgeGraphManager.setEntityStatus(task.name, "active");
+                  } catch (error) {
+                    console.error(`Error setting status for new task ${task.name}: ${error}`);
+                  }
+                  
+                  // Set task priority if specified
+                  if (task.priority) {
+                    try {
+                      const priorityValue = task.priority.toLowerCase() === "high" ? "high" : "low";
+                      await knowledgeGraphManager.setEntityPriority(task.name, priorityValue);
+                    } catch (error) {
+                      console.error(`Error setting priority for new task ${task.name}: ${error}`);
+                    }
+                  }
+                  
+                  // Create sequencing relationships if specified
+                  try {
+                    // This task precedes another task
+                    if (task.precedes) {
+                      await knowledgeGraphManager.createRelations([{
+                        from: task.name,
+                        to: task.precedes,
+                        relationType: "precedes"
+                      }]);
+                    }
+                    
+                    // This task follows another task
+                    if (task.follows) {
+                      await knowledgeGraphManager.createRelations([{
+                        from: task.follows,
+                        to: task.name,
+                        relationType: "precedes"
+                      }]);
+                    }
+                  } catch (error) {
+                    console.error(`Error setting sequencing for task ${task.name}: ${error}`);
+                  }
+                }
                 
                 // Link tasks to project
                 const taskRelations = taskEntities.map((task: {name: string}) => ({
@@ -1930,7 +2141,6 @@ ${outgoingText}`;
               sessionState.push({
                 type: 'session_completed',
                 timestamp: new Date().toISOString(),
-                date: date,
                 summary: summary,
                 project: focus
               });
@@ -1941,7 +2151,7 @@ ${outgoingText}`;
               // Prepare the summary message
               const summaryMessage = `# Development Session Recorded
 
-I've recorded your development session from ${date} focusing on ${focus}.
+I've recorded your development session focusing on ${focus}.
 
 ## Achievements Documented
 ${achievements.map((a: string) => `- ${a}`).join('\n') || "No achievements recorded."}

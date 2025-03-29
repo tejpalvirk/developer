@@ -12,6 +12,8 @@ When to use this tool:
 - Investigating dependencies between components
 - Analyzing the evolution of a software project
 - Understanding the context surrounding development entities
+- Exploring task sequencing and dependencies
+- Identifying entities by status or priority
 
 Key features:
 - Six specialized query operation types
@@ -21,8 +23,7 @@ Key features:
 - Relationship exploration with filtering options
 - Project decision history with chronological ordering
 - Milestone progress tracking with task status breakdown
-- JSON-formatted response with query results
-- Detailed error reporting when operations fail
+- Status and priority information retrieval
 
 Parameters explained:
 - type: The query operation type to perform, which must be one of:
@@ -46,13 +47,19 @@ Operation details:
 - "nodes" retrieves specific entities by exact name matching
 - "related" finds all incoming and outgoing relationships for an entity
 - "decisions" retrieves and chronologically sorts project decisions
-- "milestone" calculates progress percentage and task breakdowns
+- "milestone" calculates progress percentage and task breakdowns with status information
+
+Notes:
+- Valid status values: "inactive", "active", or "complete"
+- Valid priority values: "low" or "high"
+- Status is represented via the has_status relation type, and priority via has_priority
 
 Return structures:
 - All operations return { success: true/false, ... } with operation-specific data
 - Error responses include detailed error messages
 - "related" returns both incoming and outgoing relationships
-- "milestone" includes progress percentage and task categorization
+- "milestone" includes progress percentage and task categorization by status
+- Sequencing information appears in directed relationship graphs
 
 You should:
 1. Select the most appropriate query type for your information need
@@ -62,4 +69,7 @@ You should:
 5. Use "related" to explore the neighborhood of a known entity
 6. Use "decisions" to understand the rationale behind project changes
 7. Use "milestone" to evaluate project progress and identify blockers
-8. Combine query results to build comprehensive understanding 
+8. Analyze task sequencing to understand dependencies and critical paths
+9. Filter entities by status to focus on active, inactive, or completed items
+10. Consider entity priorities when planning work or resolving issues
+11. Combine query results to build comprehensive understanding 

@@ -10,6 +10,8 @@ When to use this tool:
 - Recording new information discovered during development
 - Tracking project structure, dependencies, and status
 - Documenting developer roles and assignments
+- Setting entity status and priority values
+- Defining task sequencing and dependencies
 
 Key features:
 - Three distinct operation types (entities, relations, observations)
@@ -43,16 +45,27 @@ Entity Types:
 - environment - Development, staging, production environments
 - documentation - Project documentation
 - requirement - Project requirement or specification
+- status - Entity status (inactive, active, or complete)
+- priority - Entity priority (low or high)
 
 Relation Types include:
 - depends_on - Dependency relationship
 - implements - Component implements a feature
-- assigned_to - Task is assigned to a developer
 - blocked_by - Task is blocked by an issue
 - uses - Component uses a technology
 - part_of - Component is part of a project
 - contains - Project contains a component
-- works_on - Developer works on a project/component
+- has_status - Links entity to its status (inactive, active, complete)
+- has_priority - Links entity to its priority (low, high)
+- precedes - Task precedes another task (for sequencing)
+- related_to - General relationship
+- affects - Issue affects a component
+- resolves - Task resolves an issue
+- documented_in - Component is documented in documentation
+- decided_in - Decision was made in a meeting
+- required_by - Feature is required by a requirement
+- depends_on_milestone - Task depends on reaching a milestone
+- tested_in - Component is tested in an environment
 
 You should:
 1. Specify the operation type based on what you need to create (entities, relations, or observations)
@@ -60,6 +73,8 @@ You should:
 3. Use valid entity types and relation types from the software development domain
 4. Ensure entities exist before creating relations between them
 5. Provide meaningful names and descriptions for new entities
-6. Use observations to add metadata like status, priority, or deadlines
+6. Use observations to add metadata about entities
 7. Create complete structures rather than adding entities/relations piecemeal
-8. Check the operation result to confirm successful creation 
+8. For task sequencing, use the 'precedes' relation to define which tasks must be completed before others
+9. Set status values using the has_status relation (valid values: inactive, active, complete)
+10. Set priority values using the has_priority relation (valid values: low, high)

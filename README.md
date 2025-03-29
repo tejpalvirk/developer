@@ -62,6 +62,31 @@ The Developer MCP Server models the following relationships between entities, mi
 - **reviews**: Developer reviews a component
 - **tested_in**: Component is tested in an environment
 
+## Environment Variables
+
+The Developer MCP Server supports the following environment variables to customize where data is stored:
+
+- **MEMORY_FILE_PATH**: Path where the knowledge graph data will be stored
+  - Can be absolute or relative (relative paths use current working directory)
+  - Default: `./developer/memory.json`
+
+- **SESSIONS_FILE_PATH**: Path where session data will be stored
+  - Can be absolute or relative (relative paths use current working directory)
+  - Default: `./developer/sessions.json`
+
+Example usage:
+
+```bash
+# Store data in the current directory
+MEMORY_FILE_PATH="./dev-memory.json" SESSIONS_FILE_PATH="./dev-sessions.json" npx github:tejpalvirk/contextmanager-developer
+
+# Store data in a specific location (absolute path)
+MEMORY_FILE_PATH="/path/to/data/developer-memory.json" npx github:tejpalvirk/contextmanager-developer
+
+# Store data in user's home directory
+MEMORY_FILE_PATH="$HOME/contextmanager/developer-memory.json" npx github:tejpalvirk/contextmanager-developer
+```
+
 ## Available Tools
 
 The Developer MCP Server provides the following tools:
