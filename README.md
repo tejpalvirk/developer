@@ -2,6 +2,10 @@
 
 Context management system designed for software development teams. The Developer MCP Server maintains persistent context across coding sessions, ensuring you never lose track of the project's structure, dependencies, and progress.
 
+<a href="https://glama.ai/mcp/servers/@tejpalvirk/developer">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@tejpalvirk/developer/badge" alt="Developer Server MCP server" />
+</a>
+
 ## Features
 
 - **Persistent Development Context**: Pick up exactly where you left off in your last session, with complete context about the components, issues, and tasks you were working on.
@@ -264,4 +268,4 @@ docker build -t mcp/developer -f developer/Dockerfile .
 
 ## License
 
-This MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository. 
+This MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository.
