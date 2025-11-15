@@ -1,6 +1,6 @@
 # Developer MCP Server
 
-A powerful context management system designed specifically for software development teams. The Developer MCP Server maintains persistent context across your coding sessions, ensuring you never lose track of your project's structure, dependencies, and progress.
+Context management system designed for software development teams. The Developer MCP Server maintains persistent context across coding sessions, ensuring you never lose track of the project's structure, dependencies, and progress.
 
 ## Features
 
